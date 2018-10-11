@@ -50,6 +50,10 @@ def parse_args():
 	parser.add_argument(
 		"--min_support", type=str, required=True,
 		help="Minimum number of support reads for LUMPY call")
+	#Manta-specific arguments
+	parser.add_argument(
+		"--manta_config", type=str, required=True,
+		help="path to configManta.py (i.e. (MANTA_INSTALL_PATH)/bin/configManta.py)")
 	#ERDS-specific arguments
 	parser.add_argument(
 		"--ERDS_path", type=str, required=True,
@@ -91,14 +95,14 @@ def main():
 	sample_bam = bam.bam_file(args.bam_file, args.reference, args.samtools_path)
 
 	#Extract and sort discordant and split reads
-	sample_bam.extract_discordants(args.output_prefix)
-	sample_bam.extract_splitters(args.lumpy_path, args.output_prefix)
+	#sample_bam.extract_discordants(args.output_prefix)
+	#sample_bam.extract_splitters(args.lumpy_path, args.output_prefix)
 	discordants = args.working_dir + args.output_prefix + ".discordants.unsorted.bam"
 	splitters = args.working_dir + args.output_prefix + ".splitters.unsorted.bam"
 	splitters_sorted = args.output_prefix + ".splitters"
 	discordants_sorted = args.output_prefix + ".discordants"
-	sample_bam.sort_bam(splitters, splitters_sorted)
-	sample_bam.sort_bam(discordants, discordants_sorted)
+	#sample_bam.sort_bam(splitters, splitters_sorted)
+	#sample_bam.sort_bam(discordants, discordants_sorted)
 	insert = sample_bam.get_insert_size(args.lumpy_path, args.output_prefix)
 
 	#Run LUMPY
@@ -109,7 +113,7 @@ def main():
 	CNVnator = sample_bam.run_CNVnator(args.chromosomes, args.output_prefix)
 
 	#Generate Manta config file, then run Manta
-	Manta_Dir = sample_bam.Manta_config(args.output_prefix)
+	Manta_Dir = sample_bam.Manta_config(args.manta_config, args.output_prefix)
 	Manta = sample_bam.run_Manta(Manta_Dir)
 
 	#Run ERDS

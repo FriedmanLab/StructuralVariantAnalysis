@@ -68,52 +68,50 @@ class SURVIVOR_vcf():
 		To do!
 
 		"""
-
+		SURVIVORvcf = open(self.file_path, 'r')
 		avinput = open(workdir + "/" + output_prefix + ".SURVIVOR.avinput", 'w')
 
-		for line in self.file_path:
-		    if line.startswith('#'):
-		        pass
-		    else:
-			cols=line.strip('\n').split('\t')
-			chr=cols[0]
-		        ref="0"
-		        alt="0"
-		        sv=cols[4]
-		        other=cols[7]
-		        geno=cols[8:]
-				#SURVIVOR sometimes annotates inversions as having a smaller end coordinate than start; reverse these for annotation with Annovar
-		        if sv == '<INV>':
-		            start=other.split(';')
-		            start=start[6].split('=')
-		            start=int(start[1])
-		            end=int(str(cols[1]))
-		            if start < end:
-		                start = start
-		            else:
-		                end = start
-		                start = str(cols[1])
-		        #For translocation (i.e. inter or intra chromosome), add one bp to start coordinate to get end coordinate
-		        elif ":" in sv:
-		             start=str(cols[1])
-		             end = int(cols[1]) + 1
-		             end = str(end)
-		        else:
-		            start=str(cols[1])
-		            end=other.split(';')
-		            end=end[6].split('=')
-		            end=end[1]
-		        colsnew=[]
-		        colsnew.append(chr)
-		        colsnew.append(str(start))
-		        colsnew.append(str(end))
-		        colsnew.append(ref)
-		        colsnew.append(alt)
-		        colsnew.append(sv)
-		        colsnew.append(other)
-		        colsnew= colsnew + cols[8:]
-			newline="\t".join(colsnew)
-			avinput.write("%s\n"%newline)
+		for line in SURVIVORvcf:
+			if line.startswith('#'):
+				pass
+			else:
+				cols=line.strip('\n').split('\t')
+				chr = cols[0]
+				ref = "0"
+				alt = "0"
+				sv = cols[4]
+				other = cols[7]
+				geno = cols [8:]
+				if sv == '<INV>':
+					start = other.split(';')
+					start = start[6].split('=')
+					start = int (start[1])
+					end = int(str(cols[1]))
+					if start < end:
+						start = start
+					else:
+						end = start
+						start = str(cols[1])
+				elif ":" in sv:
+					start = str(cols[1])
+					end = int(cols[1]) + 1
+					end = str(end)
+				else:
+					start = str(cols[1])
+					end = other.split(';')
+					end = end[6].split('=')
+					end = end[1]
+				colsnew = []
+				colsnew.extend((chr,str(start),str(end),ref,alt,sv,other))
+				colsnew = colsnew + cols[8:]
+				newline="\t".join(colsnew)
+				avinput.write("%s\n"%newline)
+
+		return workdir + "/" + output_prefix + ".SURVIVOR.avinput"
+
+
+
+
 
 	def annotate_avinput(self, table_annovar, humandb, reference, output_prefix, workdir, *bedfiles):
 		"""
@@ -225,13 +223,13 @@ class SURVIVOR_vcf():
 
 		return command_line
 
-SURVIVORvcf = SURVIVOR_vcf("/home/mcouse/projects/rrg-frid/IMAGINE/SV/BATCH4/CP038-P.SURVIVOR.SV.200.vcf")
+#SURVIVORvcf = SURVIVOR_vcf("/home/mcouse/projects/rrg-frid/IMAGINE/SV/BATCH4/CP038-P.SURVIVOR.SV.200.vcf")
 
-avinput = SURVIVORvcf.SURVIVOR_to_avinput("CP038-P","/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/StructuralVariantAnalysis/everythingSV/")
+#avinput = SURVIVORvcf.SURVIVOR_to_avinput("CP038-P","/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/StructuralVariantAnalysis/everythingSV/")
 
 #avinput = SURVIVOR_vcf("/home/mcouse/projects/rrg-frid/IMAGINE/SV/BATCH4/CP038-P.SURVIVOR.SV.200.avinput")
 
-avinput.annotate_avinput ("/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/annovar/table_annovar.pl",
-"/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/annovar//humandb",
-"hg19", "CP038-P", "/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/StructuralVariantAnalysis/everythingSV/", "InHouseDB_SV_50_20180507_DUP_name.bed, NA, NA", "InHouseDB_SV_50_20180507_DEL_name.bed, NA, NA", "InHouseDB_SV_50_20180507_INV_name.bed, 8, NA",
-"InHouseDB_SV_50_20180507_INS_name.bed, 8, 0.8" )
+#avinput.annotate_avinput ("/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/annovar/table_annovar.pl",
+#{}"/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/annovar//humandb",
+#{}"hg19", "CP038-P", #"/home/mcouse/projects/rrg-frid/IMAGINE/SOFTWARE/StructuralVariantAnalysis/ever#ythingSV/", "InHouseDB_SV_50_20180507_DUP_name.bed, NA, NA", #"InHouseDB_SV_50_20180507_DEL_name.bed, NA, NA", "InHouseDB_SV_50_20180507_INV_name.bed, 8, NA",
+#{}"InHouseDB_SV_50_20180507_INS_name.bed, 8, 0.8" )

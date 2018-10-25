@@ -95,14 +95,14 @@ def main():
 	sample_bam = bam.bam_file(args.bam_file, args.reference, args.samtools_path)
 
 	#Extract and sort discordant and split reads
-	#sample_bam.extract_discordants(args.output_prefix)
-	#sample_bam.extract_splitters(args.lumpy_path, args.output_prefix)
+	sample_bam.extract_discordants(args.output_prefix)
+	sample_bam.extract_splitters(args.lumpy_path, args.output_prefix)
 	discordants = args.working_dir + args.output_prefix + ".discordants.unsorted.bam"
 	splitters = args.working_dir + args.output_prefix + ".splitters.unsorted.bam"
 	splitters_sorted = args.output_prefix + ".splitters"
 	discordants_sorted = args.output_prefix + ".discordants"
-	#sample_bam.sort_bam(splitters, splitters_sorted)
-	#sample_bam.sort_bam(discordants, discordants_sorted)
+	sample_bam.sort_bam(splitters, splitters_sorted)
+	sample_bam.sort_bam(discordants, discordants_sorted)
 	insert = sample_bam.get_insert_size(args.lumpy_path, args.output_prefix)
 
 	#Run LUMPY

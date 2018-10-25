@@ -324,10 +324,10 @@ class bam_file():
 				Manta_dir + "/runWorkflow.py")
 		subprocess.call(command_line, shell=True)
 
-		command_line = "gunzip {}".format(Manta_dir + "/results/variants/diploid.vcf.gz")
+		command_line = "gunzip {}".format(Manta_dir + "/results/variants/diploidSV.vcf.gz")
 		subprocess.call(command_line, shell=True)
 
-		return Manta_dir + "/results/variants/diploid.vcf"
+		return Manta_dir + "/results/variants/diploidSV.vcf"
 
 	def run_ERDS(self, ERDS_path, output_prefix, small_variant_vcf):
 		"""

@@ -96,7 +96,15 @@ def parse_args():
 		"--annovar_reference", type=str, required=True,
 		help="hg19 or hg38")
 	parser.add_argument(
-		"--bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+		"--deletion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+	parser.add_argument(
+		"--duplication_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+	parser.add_argument(
+		"--inversion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+	parser.add_argument(
+		"--insertion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+	parser.add_argument(
+		"--breakend_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
 
 
 
@@ -136,19 +144,32 @@ def main():
 
 	#Generate list of SV vcfs, then run SURVIVOR
 	#variant_list = sample_bam.make_variant_file(args.output_prefix, LUMPY, CNVnator, Manta, ERDS)
-	variant_list = "CP012-P_variant_list.txt"
+	#variant_list = "CP012-P_variant_list.txt"
 
-	SURVIVOR = sample_bam.run_SURVIVOR(args.SURVIVOR_path, variant_list,
-	args.SURVIVOR_max_dist, args.SURVIVOR_min_support,
-	args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV, args.output_prefix)
+	#SURVIVOR = sample_bam.run_SURVIVOR(args.SURVIVOR_path, variant_list,
+	#args.SURVIVOR_max_dist, args.SURVIVOR_min_support,
+	#args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV, args.output_prefix)
 
-	#Convert SURIVIVOR vcf to avinput, and run annovar to annotate variant_list
-	SURVIVOR = SURVIVORvcf.SURVIVOR_vcf(SURVIVOR)
+	#Convert SURIVIVOR vcf to avinput
+	#SURVIVOR = SURVIVORvcf.SURVIVOR_vcf(SURVIVOR)
+	#avinput = SURVIVOR.SURVIVOR_to_avinput(args.output_prefix, args.working_dir)
+	avinput = "CP012-P.SURVIVOR.avinput"
+	
+	#Separate SVs by type (ie DEL, DUP, INS, INV, BND)
+	annotateSURVIVOR.split_by_SV_type(avinput, args.output_prefix, args.working_dir)
+	DEL = args.working_dir + args.output_prefix + ".DEL"
+	DUP = args.working_dir + args.output_prefix + ".DUP"
+	INV = args.working_dir + args.output_prefix + ".INV"
+	INS = args.working_dir + args.output_prefix + ".INS"
+	BND = args.working_dir + args.output_prefix + ".BND"
 
-	avinput = SURVIVOR.SURVIVOR_to_avinput(args.output_prefix, args.working_dir)
+	annotated_DEL = annotateSURVIVOR.annotate_avinput(DEL, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DEL", args.working_dir, args.deletion_bedfiles) 
+	annotated_DUP = annotateSURVIVOR.annotate_avinput(DUP, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DUP", args.working_dir, args.duplication_bedfiles) 
+	annotated_INV = annotateSURVIVOR.annotate_avinput(INV, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".INV", args.working_dir, args.inversion_bedfiles) 
+	annotated_INS = annotateSURVIVOR.annotate_avinput(INS, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".INS", args.working_dir, args.insertion_bedfiles) 
+	annotated_BND = annotateSURVIVOR.annotate_avinput(BND, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".BND", args.working_dir, args.breakend_bedfiles) 
 
-	annotated_SV = annotateSURVIVOR.annotate_avinput(avinput, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix, args.working_dir, args.bedfiles) 
-
+	
 
 
 

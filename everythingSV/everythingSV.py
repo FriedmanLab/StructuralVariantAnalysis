@@ -96,15 +96,15 @@ def parse_args():
 		"--annovar_reference", type=str, required=True,
 		help="hg19 or hg38")
 	parser.add_argument(
-		"--deletion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+		"--deletion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of the sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation with the sample SV calculated, otherwise FALSE (e.g. 'gene_promoters.bed, 4, 0.9, TRUE' 'repetitive_regions.bed, 7, NA, FALSE' ")
 	parser.add_argument(
-		"--duplication_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+		"--duplication_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of the sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation with the sample SV calculated, otherwise FALSE (e.g. 'gene_promoters.bed, 4, 0.9, TRUE' 'repetitive_regions.bed, 7, NA, FALSE' ")
 	parser.add_argument(
-		"--inversion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+		"--inversion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of the sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation with the sample SV calculated, otherwise FALSE (e.g. 'gene_promoters.bed, 4, 0.9, TRUE' 'repetitive_regions.bed, 7, NA, FALSE' ")
 	parser.add_argument(
-		"--insertion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+		"--insertion_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of the sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation with the sample SV calculated, otherwise FALSE (e.g. 'gene_promoters.bed, 4, 0.9, TRUE' 'repetitive_regions.bed, 7, NA, FALSE' ")
 	parser.add_argument(
-		"--breakend_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. 'gene_promoters.bed, 4, 0.9' 'repetitive_regions.bed, 7, NA' ")
+		"--breakend_bedfiles", required=True, nargs='+', help="A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of the sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation with the sample SV calculated, otherwise FALSE (e.g. 'gene_promoters.bed, 4, 0.9, TRUE' 'repetitive_regions.bed, 7, NA, FALSE' ")
 
 
 
@@ -118,42 +118,41 @@ def main():
 	sample_bam = bam.bam_file(args.bam_file, args.reference, args.samtools_path)
 
 	#Extract and sort discordant and split reads
-	#sample_bam.extract_discordants(args.output_prefix)
-	#sample_bam.extract_splitters(args.lumpy_path, args.output_prefix)
-	#discordants = args.working_dir + args.output_prefix + ".discordants.unsorted.bam"
-	#splitters = args.working_dir + args.output_prefix + ".splitters.unsorted.bam"
-	#splitters_sorted = args.output_prefix + ".splitters"
-	#discordants_sorted = args.output_prefix + ".discordants"
-	#sample_bam.sort_bam(splitters, splitters_sorted)
-	#sample_bam.sort_bam(discordants, discordants_sorted)
-	#insert = sample_bam.get_insert_size(args.lumpy_path, args.output_prefix)
+	sample_bam.extract_discordants(args.output_prefix)
+	sample_bam.extract_splitters(args.lumpy_path, args.output_prefix)
+	discordants = args.working_dir + args.output_prefix + ".discordants.unsorted.bam"
+	splitters = args.working_dir + args.output_prefix + ".splitters.unsorted.bam"
+	splitters_sorted = args.output_prefix + ".splitters"
+	discordants_sorted = args.output_prefix + ".discordants"
+	sample_bam.sort_bam(splitters, splitters_sorted)
+	sample_bam.sort_bam(discordants, discordants_sorted)
+	insert = sample_bam.get_insert_size(args.lumpy_path, args.output_prefix)
 
 	#Run LUMPY
-	#LUMPY = sample_bam.run_LUMPY(args.lumpy, args.output_prefix,
-	#	sample_bam.get_insert_size(args.lumpy_path, args.output_prefix), args.read_length, args.min_mapq, args.min_support)
+	LUMPY = sample_bam.run_LUMPY(args.lumpy, args.output_prefix,
+		sample_bam.get_insert_size(args.lumpy_path, args.output_prefix), args.read_length, args.min_mapq, args.min_support)
 
 	#Run CNVnator
-	#CNVnator = sample_bam.run_CNVnator(args.chromosomes, args.output_prefix)
+	CNVnator = sample_bam.run_CNVnator(args.chromosomes, args.output_prefix)
 
 	#Generate Manta config file, then run Manta
-	#Manta_Dir = sample_bam.Manta_config(args.manta_config, args.output_prefix)
-	#Manta = sample_bam.run_Manta(Manta_Dir)
+	Manta_Dir = sample_bam.Manta_config(args.manta_config, args.output_prefix)
+	Manta = sample_bam.run_Manta(Manta_Dir)
 
 	#Run ERDS
-	#ERDS = sample_bam.run_ERDS(args.ERDS_path, args.output_prefix, args.small_variant_vcf)
+	ERDS = sample_bam.run_ERDS(args.ERDS_path, args.output_prefix, args.small_variant_vcf)
 
 	#Generate list of SV vcfs, then run SURVIVOR
-	#variant_list = sample_bam.make_variant_file(args.output_prefix, LUMPY, CNVnator, Manta, ERDS)
-	#variant_list = "CP012-P_variant_list.txt"
+	variant_list = sample_bam.make_variant_file(args.output_prefix, LUMPY, CNVnator, Manta, ERDS)
+	variant_list = "CP012-P_variant_list.txt"
 
 	#SURVIVOR = sample_bam.run_SURVIVOR(args.SURVIVOR_path, variant_list,
-	#args.SURVIVOR_max_dist, args.SURVIVOR_min_support,
-	#args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV, args.output_prefix)
+	args.SURVIVOR_max_dist, args.SURVIVOR_min_support,
+	args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV, args.output_prefix)
 
 	#Convert SURIVIVOR vcf to avinput
-	#SURVIVOR = SURVIVORvcf.SURVIVOR_vcf(SURVIVOR)
-	#avinput = SURVIVOR.SURVIVOR_to_avinput(args.output_prefix, args.working_dir)
-	avinput = "CP012-P.SURVIVOR.avinput"
+	SURVIVOR = SURVIVORvcf.SURVIVOR_vcf(SURVIVOR)
+	avinput = SURVIVOR.SURVIVOR_to_avinput(args.output_prefix, args.working_dir)
 	
 	#Separate SVs by type (ie DEL, DUP, INS, INV, BND)
 	annotateSURVIVOR.split_by_SV_type(avinput, args.output_prefix, args.working_dir)
@@ -169,15 +168,16 @@ def main():
 	annotated_INS = annotateSURVIVOR.annotate_avinput(INS, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".INS", args.working_dir, args.insertion_bedfiles) 
 	annotated_BND = annotateSURVIVOR.annotate_avinput(BND, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".BND", args.working_dir, args.breakend_bedfiles) 
 
-	
+	annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_DEL, "DEL",  args.deletion_bedfiles)
+
+	annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_DUP, "DUP",  args.duplication_bedfiles)
+
+	annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_INV, "INV",  args.inversion_bedfiles)
+
+	annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_INS, "INS",  args.insertion_bedfiles)
 
 
-
-
-
-
-
-
+	annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_BND, "BND",  args.breakend_bedfiles)
 
 
 

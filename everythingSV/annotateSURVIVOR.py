@@ -87,7 +87,7 @@ def annotate_avinput(avinput, table_annovar, humandb, reference, output_prefix, 
             working directory (output is written here)
 
         bedfiles : list
-            A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, and the minimum fraction of overlap of sample SV with region of interest is the third element (e.g. "gene_promoters.bed, 4, 0.9")
+            A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation calculated, otherwise FALSE  (e.g. "gene_promoters.bed, 4, 0.9")
 
         Returns
         -------
@@ -158,4 +158,129 @@ def annotate_avinput(avinput, table_annovar, humandb, reference, output_prefix, 
         subprocess.call(command_line, shell=True)
 
         return output_prefix + ".annovar.txt.hg19_multianno.txt"
+
+def calculate_overlap(output_prefix, workdir, avoutput, svtype, *bedfiles):
+        """
+        Takes the *bedfiles argument and extracts the columns of interest where overlap = TRUE, and calculates the fraction of overlap of the sample SV with the database SV/annotation from the  avoutput file
+
+        To do this, the annotation column of the bedfile that is specified must be in the format chr:start:end:<otherinfo>
+
+        Parameters
+        ----------
+
+        output_prefix : str
+            sample prefix
+
+        workdir : str
+            working directory (output is written here)
+
+        svtype : str
+            DEL, DUP, INV, INS, BND
+
+        bedfiles : list
+            A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation calculated, otherwise FALSE  (e.g. "gene_promoters.bed, 4, 0.9, TRUE")
+
+        avoutput: str
+            output file from annovar annotation (i.e. <SAMPLE>.annovar.txt.hg19_multianno.txt)
+        Returns
+        -------
+
+        str
+            path to annotated SV text file
+
+        Raises
+        ------
+
+        To do!
+        """
+
+        bedfiles = bedfiles[0]
+
+        #The first bed file specified by the user is column 10
+        col_num = 10
+
+        #Make a list of column numbers for which a reciprocal overlap calculation is desired
+        overlap_col = []
+        for bedfile in bedfiles:
+            bedfile = bedfile.strip('').split(",")
+            overlap = bedfile[3]
+            if 'TRUE' in overlap:
+                overlap_col.append(col_num)
+                col_num = col_num + 1
+            else:
+                col_num = col_num + 1 
+
+                
+
+        avoutput = open(avoutput, 'r')
+        avoutput_overlap_calcs = open(workdir + output_prefix + "DEL.withoverlap.annovar.txt.hg19_multianno.txt", 'w')
+
+        #Iterate through annovar output file line by line and calculate reciprocal overlap where specified in overlap_col
+        for line in avoutput: 
+            cols=line.strip('\n').split('\t')
+            output_col = []
+            #skip header
+            if cols[0] == "Chr":
+                pass
+            else:
+                #get sample SV coordinates
+                chr=cols[0]
+                start=int(cols[1])
+                end=int(cols[2])
+                length=end-start
+                #iterate through each annotation for which an overlap calculation is desired and calculate reciprocal overlap with sample SV
+                newcols=[]
+                for col in overlap_col:
+                    annotation = cols[col].split(",")
+                    recoverlaplist=[]
+                    for record in annotation:
+                        if record != '.':
+                            #AC=record.strip('"').split(":")[3]
+                            anno_coordinates = record.strip('"').split(":")
+                            anno_start=int(anno_coordinates[1])
+                            anno_end=int(anno_coordinates[2])
+                            if svtype == "INS":
+                                anno_length = 1
+                                recoverlap = "1"
+                            elif svtype == "BND":
+                                anno_length = 1
+                                recoverlap = "1"
+                            else:
+                                anno_length = float(anno_end-anno_start)
+                                startMax = max(start, anno_start)
+                                endMin = min(end, anno_end)
+                                recoverlap = str((endMin-startMax)/anno_length)
+                            recoverlaplist.append(recoverlap)
+                    #create new list associating database annotation coordinates to reciprocal overlap calculation
+                    new_col =[]
+                    for anno, rec in zip (annotation, recoverlaplist):
+                        new_col.append(anno + ":" + rec)
+                    new_col = ",".join(new_col)
+                    output_col.append(new_col)
+            index = 0
+            newcol_index = 0
+            final_output_col = []
+            #For final output, append columns unchanged where the reciprocal overlap was not calculated. For columns for which a reciprocal overlap was calculated, append modified annotations which include reciprocal overlap fraction
+            for col in  cols:
+                if cols[0] == "Chr":
+                    pass
+                elif index not in overlap_col: 
+                    final_output_col.append(col)
+                    index = index + 1
+                else:
+                    final_output_col.append(output_col[newcol_index])
+                    newcol_index = newcol_index + 1
+                    index = index + 1
+            newline = newline="\t".join(final_output_col)
+            avoutput_overlap_calcs.write("%s\n"%newline)
+
+                    
+                            
+                        
+
+
+
+
+
+
 

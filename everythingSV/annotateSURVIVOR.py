@@ -213,7 +213,7 @@ def calculate_overlap(output_prefix, workdir, avoutput, svtype, *bedfiles):
                 
 
         avoutput = open(avoutput, 'r')
-        avoutput_overlap_calcs = open(workdir + output_prefix + "DEL.withoverlap.annovar.txt.hg19_multianno.txt", 'w')
+        avoutput_overlap_calcs = open(workdir + output_prefix + "." + svtype + ".withoverlap.annovar.txt.hg19_multianno.txt", 'w')
 
         #Iterate through annovar output file line by line and calculate reciprocal overlap where specified in overlap_col
         for line in avoutput: 

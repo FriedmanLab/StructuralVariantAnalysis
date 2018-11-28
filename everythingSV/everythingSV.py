@@ -18,17 +18,17 @@ def parse_args():
 	"""
 
 	parser = argparse.ArgumentParser(
-			description="This script runs LUMPY, Manta, CNVnator, and ERDS"
-			"on a bwa-mem aligned bam file." )
+		description="This script runs LUMPY, Manta, CNVnator, and ERDS"
+		"on a bwa-mem aligned bam file." )
 	parser.add_argument(
-			"--bam_file", type=str, required=True,
-			help="Path to bam file")
+		"--bam_file", type=str, required=True,
+		help="Path to bam file")
 	parser.add_argument(
-			"--reference", type=str, required=True,
-			help="Path to reference fasta")
+		"--reference", type=str, required=True,
+		help="Path to reference fasta")
 	parser.add_argument(
-			"--chromosomes", type=str, required=True,
-			help="Path to chromosome fastas")
+		"--chromosomes", type=str, required=True,
+		help="Path to chromosome fastas")
 	parser.add_argument(
 		"--samtools_path", type=str, required=True,
 		help="Path to Samtools executable")
@@ -80,8 +80,11 @@ def parse_args():
 		"--SURVIVOR_path", type=str, required=True,
 		help="Path to SURVIVOR executable")
 	parser.add_argument(
-		"--SURVIVOR_max_dist", type=str, required=True,
-		help="Max distance between breakpoints")
+		"--SURVIVOR_max_dist_small", type=str, required=True,
+		help="Max distance between breakpoints for 'small' SVs")
+	parser.add_argument(
+		"--SURVIVOR_max_dist_large", type=str, required=True,
+		help="Max distance between breakpoints for 'large' SVs")
 	parser.add_argument(
 		"--SURVIVOR_min_support", type=str, required=True,
 		help="Minimum number of supporting callers")
@@ -95,8 +98,11 @@ def parse_args():
 		"--SURVIVOR_estimate_distance", type=str, required=True,
 		help="estimate distance based on the size of SV (1=yes, 0=no)")
 	parser.add_argument(
-		"--SURVIVOR_min_SV", type=str, required=True,
-		help="minimum size of SVs to be taken into account")
+		"--SURVIVOR_min_SV_small", type=str, required=True,
+		help="minimum size of 'small' SVs to be taken into account")
+	parser.add_argument(
+		"--SURVIVOR_min_SV_large", type=str, required=True,
+		help="minimum size of 'large' SVs to be taken into account")
 	parser.add_argument(
 		"--SURVIVOR_additional_vcfs", nargs='+', required=False,
 		help="additional SV vcfs to input to SURVIVOR")
@@ -160,80 +166,125 @@ def main():
 	ERDS = sample_bam.run_ERDS(args.ERDS_path, args.working_dir, args.output_prefix, args.small_variant_vcf)
 
 
+	#LUMPY="test/CP012-P.LUMPY.vcf"
+	#Manta="test/CP012-P_Manta/results/variants/diploidSV.vcf"
+	#CNVnator = "test/CP012-P.CNVcall.1000.filter.vcf"
+	#ERDS = "test/CP012-P.ERDS/CP012-P.erds.vcf"
+
+	#ANNOTATE SMALL SVS
 	#Generate list of SV vcfs, then run SURVIVOR
 	if  args.SURVIVOR_additional_vcfs != None:
-		variant_list = sample_bam.make_variant_file(args.working_dir, args.output_prefix, LUMPY, CNVnator, Manta, ERDS, args.SURVIVOR_additional_vcfs)
+		variant_list = sample_bam.make_variant_file(args.working_dir, args.output_prefix, LUMPY, Manta, args.SURVIVOR_additional_vcfs)
 	else:
-		variant_list = sample_bam.make_variant_file(args.working_dir, args.output_prefix, LUMPY, CNVnator, Manta, ERDS)
+		variant_list = sample_bam.make_variant_file(args.working_dir, args.output_prefix, LUMPY, Manta)
 	
 	SURVIVOR = sample_bam.run_SURVIVOR(args.SURVIVOR_path, variant_list,
-	args.SURVIVOR_max_dist, args.SURVIVOR_min_support,
-	args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV, args.working_dir, args.output_prefix)
+	args.SURVIVOR_max_dist_small, args.SURVIVOR_min_support,
+	args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV_small, args.working_dir, args.output_prefix, 'small')
 
 	#Convert SURIVIVOR vcf to avinput
 	SURVIVOR = SURVIVORvcf.SURVIVOR_vcf(SURVIVOR)
-	avinput = SURVIVOR.SURVIVOR_to_avinput(args.output_prefix, args.working_dir)
+	avinput = SURVIVOR.SURVIVOR_to_avinput(args.output_prefix, args.working_dir, 'small')
 	
 	#Separate SVs by type (ie DEL, DUP, INS, INV, BND)
-	annotateSURVIVOR.split_by_SV_type(avinput, args.output_prefix, args.working_dir)
-	DEL = args.working_dir + "/" +  args.output_prefix + ".DEL"
-	DUP = args.working_dir +  "/" + args.output_prefix + ".DUP"
-	INV = args.working_dir +  "/" + args.output_prefix + ".INV"
-	INS = args.working_dir +  "/" + args.output_prefix + ".INS"
-	BND = args.working_dir +  "/" + args.output_prefix + ".BND"
+	annotateSURVIVOR.split_by_SV_type(avinput, args.output_prefix, args.working_dir, 'small')
+	DEL = args.working_dir + "/" +  args.output_prefix + ".DEL." + 'small'
+	DUP = args.working_dir +  "/" + args.output_prefix + ".DUP." + 'small'
+	INV = args.working_dir +  "/" + args.output_prefix + ".INV." + 'small'
+	INS = args.working_dir +  "/" + args.output_prefix + ".INS." + 'small'
+	BND = args.working_dir +  "/" + args.output_prefix + ".BND." + 'small'
 
 	#Annotate variants
-	annotated_DEL = annotateSURVIVOR.annotate_avinput(DEL, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DEL", args.working_dir, args.deletion_bedfiles) 
+	annotated_DEL = annotateSURVIVOR.annotate_avinput(DEL, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DEL", args.working_dir, 'small', args.deletion_bedfiles) 
 
-	annotated_DUP = annotateSURVIVOR.annotate_avinput(DUP, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DUP", args.working_dir, args.duplication_bedfiles) 
+	annotated_DUP = annotateSURVIVOR.annotate_avinput(DUP, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DUP", args.working_dir,'small', args.duplication_bedfiles) 
 
-	annotated_INV = annotateSURVIVOR.annotate_avinput(INV, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".INV", args.working_dir, args.inversion_bedfiles) 
+	annotated_INV = annotateSURVIVOR.annotate_avinput(INV, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".INV", args.working_dir, 'small', args.inversion_bedfiles) 
 
-	annotated_INS = annotateSURVIVOR.annotate_avinput(INS, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".INS", args.working_dir, args.insertion_bedfiles) 
+	annotated_INS = annotateSURVIVOR.annotate_avinput(INS, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".INS", args.working_dir, 'small',args.insertion_bedfiles) 
 
-	annotated_BND = annotateSURVIVOR.annotate_avinput(BND, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".BND", args.working_dir, args.breakend_bedfiles) 
+	annotated_BND = annotateSURVIVOR.annotate_avinput(BND, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".BND", args.working_dir, 'small', args.breakend_bedfiles) 
 
 	#Calculate reciprocal overlap for specified bed files
-	annotated_DEL_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir, annotated_DEL, "DEL",  args.deletion_bedfiles)
+	annotated_DEL_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir, annotated_DEL, "DEL", 'small',  args.deletion_bedfiles)
 
-	annotated_DUP_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_DUP, "DUP",  args.duplication_bedfiles)
+	annotated_DUP_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_DUP, "DUP", 'small', args.duplication_bedfiles)
 
-	annotated_INV_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_INV, "INV",  args.inversion_bedfiles)
+	annotated_INV_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_INV, "INV", 'small',args.inversion_bedfiles)
 
-	annotated_INS_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_INS, "INS",  args.insertion_bedfiles)
+	annotated_INS_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_INS, "INS", 'small',  args.insertion_bedfiles)
 
-	annotated_BND_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_BND, "BND",  args.breakend_bedfiles)
+	annotated_BND_overlap = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir,annotated_BND, "BND",'small',  args.breakend_bedfiles)
 
 	#Add headers
 	#Deletion
-	DEL_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "DEL",  args.deletion_bedfiles)
+	DEL_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "DEL.small",  args.deletion_bedfiles)
 
-	command_line = "cat {} {} > {} ".format(DEL_header, annotated_DEL_overlap, args.working_dir + "/" +  args.output_prefix + ".DEL" + ".withoverlap.header.annovar.hg19_multianno.txt")
+	command_line = "cat {} {} > {} ".format(DEL_header, annotated_DEL_overlap, args.working_dir + "/" +  args.output_prefix + ".DEL.small" + ".withoverlap.header.annovar.hg19_multianno.txt")
 	subprocess.call(command_line, shell=True) 
 
 	#Duplication
-	DUP_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "DUP",  args.duplication_bedfiles)
+	DUP_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "DUP.small",  args.duplication_bedfiles)
 
-	command_line = "cat {} {} > {} ".format(DUP_header, annotated_DUP_overlap, args.working_dir + "/" + args.output_prefix + ".DUP" + ".withoverlap.header.annovar.hg19_multianno.txt")
+	command_line = "cat {} {} > {} ".format(DUP_header, annotated_DUP_overlap, args.working_dir + "/" + args.output_prefix + ".DUP.small" + ".withoverlap.header.annovar.hg19_multianno.txt")
 	subprocess.call(command_line, shell=True)
 
 	#Inversion
-	INV_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "INV",  args.inversion_bedfiles)
+	INV_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "INV.small",  args.inversion_bedfiles)
 
-	command_line = "cat {} {} > {} ".format(INV_header, annotated_INV_overlap, args.working_dir + "/" + args.output_prefix + ".INV" + ".withoverlap.header.annovar.hg19_multianno.txt")
+	command_line = "cat {} {} > {} ".format(INV_header, annotated_INV_overlap, args.working_dir + "/" + args.output_prefix + ".INV.small" + ".withoverlap.header.annovar.hg19_multianno.txt")
 	subprocess.call(command_line, shell=True)
 
 	#Insertion
-	INS_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "INS",  args.insertion_bedfiles)
+	INS_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "INS.small",  args.insertion_bedfiles)
 
-	command_line = "cat {} {} > {} ".format(INS_header, annotated_INS_overlap, args.working_dir + "/" + args.output_prefix + ".INS" + ".withoverlap.header.annovar.hg19_multianno.txt")
+	command_line = "cat {} {} > {} ".format(INS_header, annotated_INS_overlap, args.working_dir + "/" + args.output_prefix + ".INS.small" + ".withoverlap.header.annovar.hg19_multianno.txt")
 	subprocess.call(command_line, shell=True)
 
 	#Breakend
-	BND_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "BND",  args.breakend_bedfiles)
+	BND_header = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "BND.small",  args.breakend_bedfiles)
 
-	command_line = "cat {} {} > {} ".format(BND_header, annotated_BND_overlap, args.working_dir + "/" + args.output_prefix + ".BND" + ".withoverlap.header.annovar.hg19_multianno.txt")
+	command_line = "cat {} {} > {} ".format(BND_header, annotated_BND_overlap, args.working_dir + "/" + args.output_prefix + ".BND.small" + ".withoverlap.header.annovar.hg19_multianno.txt")
 	subprocess.call(command_line, shell=True)
+
+	#ANNOTATE LARGE CNVS
+	large_variant_list = sample_bam.make_variant_file(args.working_dir, args.output_prefix, CNVnator, ERDS)
+	
+	SURVIVORlarge = sample_bam.run_SURVIVOR(args.SURVIVOR_path, large_variant_list,
+	args.SURVIVOR_max_dist_large, args.SURVIVOR_min_support,
+	args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV_large, args.working_dir, args.output_prefix, 'large')
+	
+	#Convert SURIVIVOR vcf to avinput
+	SURVIVORlarge = SURVIVORvcf.SURVIVOR_vcf(SURVIVORlarge)
+	avinput_large = SURVIVORlarge.SURVIVOR_to_avinput(args.output_prefix, args.working_dir, 'large')
+
+	#Separate SVs by type (DEL, DUP)
+	annotateSURVIVOR.split_by_SV_type(avinput_large, args.output_prefix, args.working_dir, 'large')
+	DEL_large = args.working_dir + "/" +  args.output_prefix + ".DEL." + 'large'
+	DUP_large = args.working_dir +  "/" + args.output_prefix + ".DUP." + 'large'
+
+	#Annotate variants
+	annotated_DEL_large = annotateSURVIVOR.annotate_avinput(DEL_large, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DEL", args.working_dir, 'large', args.deletion_bedfiles) 
+
+	annotated_DUP_large = annotateSURVIVOR.annotate_avinput(DUP_large, args.table_annovar, args.humandb, args.annovar_reference, args.output_prefix + ".DUP", args.working_dir, 'large', args.duplication_bedfiles) 
+
+	#Calculate reciprocal overlap for specified bed files
+	annotated_DEL_overlap_large = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir, annotated_DEL_large, "DEL", 'large',  args.deletion_bedfiles)
+
+	annotated_DUP_overlap_large = annotateSURVIVOR.calculate_overlap(args.output_prefix, args.working_dir, annotated_DUP_large, "DUP", 'large',  args.duplication_bedfiles)
+
+	#Add headers
+	#Deletion
+	DEL_header_large = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "DEL.large",  args.deletion_bedfiles)
+
+	command_line = "cat {} {} > {} ".format(DEL_header_large, annotated_DEL_overlap_large, args.working_dir + "/" +  args.output_prefix + ".DEL.large" + ".withoverlap.header.annovar.hg19_multianno.txt")
+	subprocess.call(command_line, shell=True) 
+
+	DUP_header_large = annotateSURVIVOR.add_header(args.output_prefix, args.working_dir, "DUP.large",  args.duplication_bedfiles)
+
+	command_line = "cat {} {} > {} ".format(DUP_header_large, annotated_DUP_overlap_large, args.working_dir + "/" +  args.output_prefix + ".DUP.large" + ".withoverlap.header.annovar.hg19_multianno.txt")
+	subprocess.call(command_line, shell=True) 
+
 
 
 main()

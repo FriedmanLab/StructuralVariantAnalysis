@@ -21,7 +21,7 @@ class SURVIVOR_vcf():
 	def __init__(self, file_path):
 		self.file_path = file_path
 
-	def SURVIVOR_to_avinput(self, output_prefix, workdir):
+	def SURVIVOR_to_avinput(self, output_prefix, workdir, size):
 		"""
 		Takes the vcf output of SURVIVOR and converts into a form compatible with annovar (avinput) i.e. chr start end ref alt otherinfo, where ref and alt are represented by "0" for compatibility
 
@@ -33,6 +33,9 @@ class SURVIVOR_vcf():
 
 		workdir : str
 			working directory (output is written here)
+
+		size: str
+			'small' (50-400000bp) or 'large' (5000+bp)
 
 		Returns
 		-------
@@ -47,7 +50,7 @@ class SURVIVOR_vcf():
 
 		"""
 		SURVIVORvcf = open(self.file_path, 'r')
-		avinput = open(workdir + "/" + output_prefix + ".SURVIVOR.avinput", 'w')
+		avinput = open(workdir + "/" + output_prefix + ".SURVIVOR." + size + ".avinput", 'w')
 
 		for line in SURVIVORvcf:
 			if line.startswith('#'):
@@ -85,7 +88,7 @@ class SURVIVOR_vcf():
 				newline="\t".join(colsnew)
 				avinput.write("%s\n"%newline)
 
-		return workdir + "/" + output_prefix + ".SURVIVOR.avinput"
+		return workdir + "/" + output_prefix + ".SURVIVOR." + size + ".avinput"
 
 
 

@@ -5,7 +5,7 @@ import os
 import subprocess
 
 
-def split_by_SV_type(avinput, output_prefix, workdir):
+def split_by_SV_type(avinput, output_prefix, workdir, size):
 		"""
 		Splits avinput file by SV type (i.e. in DEL.avinput, DUP.avinput etc)
 
@@ -21,6 +21,9 @@ def split_by_SV_type(avinput, output_prefix, workdir):
 		workdir : str
 			working directory (output is written here)
 
+		size: str
+			'small' (50-400000bp) or 'large' (5000+bp)
+
    
 		Returns
 		-------
@@ -31,15 +34,15 @@ def split_by_SV_type(avinput, output_prefix, workdir):
 
 		To do!
 		"""
-		DEL = workdir + "/" +  output_prefix + ".DEL"
+		DEL = workdir + "/" +  output_prefix + ".DEL." + size
 		DEL = open(DEL, 'w')
-		DUP = workdir + "/" +  output_prefix + ".DUP"
+		DUP = workdir + "/" +  output_prefix + ".DUP." + size
 		DUP = open(DUP, 'w')
-		INV = workdir + "/" + output_prefix + ".INV"
+		INV = workdir + "/" + output_prefix + ".INV." + size
 		INV = open(INV, 'w')
-		INS = workdir + "/" +  output_prefix + ".INS"
+		INS = workdir + "/" +  output_prefix + ".INS." + size
 		INS = open(INS, 'w')
-		BND = workdir + "/" + output_prefix + ".BND"
+		BND = workdir + "/" + output_prefix + ".BND." + size
 		BND = open(BND, 'w')
 		with open(avinput, 'r') as avinput_file:
 			for line in avinput_file:
@@ -64,7 +67,7 @@ def split_by_SV_type(avinput, output_prefix, workdir):
 
 
 
-def annotate_avinput(avinput, table_annovar, humandb, reference, output_prefix, workdir, *bedfiles):
+def annotate_avinput(avinput, table_annovar, humandb, reference, output_prefix, workdir, size, *bedfiles):
 		"""
 		Annotates a set of structural variants in avinput format
 
@@ -85,6 +88,10 @@ def annotate_avinput(avinput, table_annovar, humandb, reference, output_prefix, 
 
 		workdir : str
 			working directory (output is written here)
+
+		size: str
+			'small' (50-400000bp) or 'large' (5000+bp)
+
 
 		bedfiles : list
 			A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of sample SV with region of interest is the third element, and the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation calculated, otherwise FALSE  (e.g. "gene_promoters.bed, 4, 0.9")
@@ -151,7 +158,7 @@ def annotate_avinput(avinput, table_annovar, humandb, reference, output_prefix, 
 
 		command_line = "perl {} {} {} -buildver {} -out {} -nastring . -remove -otherinfo -protocol {} -bedfile {} -operation {} -arg '{}' ".format(
 			table_annovar, avinput, humandb, reference, workdir + '/' +
-			output_prefix + '.annovar.header.txt', protocols, filenames, operations, bed_args)
+			output_prefix + "." + size +  '.annovar.header.txt', protocols, filenames, operations, bed_args)
 
 		print command_line
 
@@ -159,14 +166,14 @@ def annotate_avinput(avinput, table_annovar, humandb, reference, output_prefix, 
 
 		#Remove annovar header
 		command_line = "tail -n +2 {} > {}".format(workdir + '/' +
-			output_prefix + '.annovar.header.txt' + '.hg19_multianno.txt', workdir + '/' +
-			output_prefix + '.annovar.txt' + '.hg19_multianno.txt')
+			output_prefix + "." + size + '.annovar.header.txt' + '.hg19_multianno.txt', workdir + '/' +
+			output_prefix + "." + size + '.annovar.txt' + '.hg19_multianno.txt')
 
 		subprocess.call(command_line, shell=True)
 
-		return workdir + '/' + output_prefix + ".annovar.txt.hg19_multianno.txt"
+		return workdir + '/' + output_prefix + "." + size + ".annovar.txt.hg19_multianno.txt"
 
-def calculate_overlap(output_prefix, workdir, avoutput, svtype, *bedfiles):
+def calculate_overlap(output_prefix, workdir, avoutput, svtype, size, *bedfiles):
 		"""
 		Takes the *bedfiles argument and extracts the columns of interest where overlap = TRUE, and calculates the fraction of overlap of the sample SV with the database SV/annotation from the  avoutput file
 
@@ -186,6 +193,9 @@ def calculate_overlap(output_prefix, workdir, avoutput, svtype, *bedfiles):
 
 		svtype : str
 			DEL, DUP, INV, INS, BND
+
+		size: str
+			'small' (50-400000bp) or 'large' (5000+bp)
 
 		bedfiles : list
 			A list where the file name of regions of interest in bed format is the first element, an integer specifiying the column of interest for annotation is the second element, the minimum fraction of overlap of sample SV with region of interest is the third element, the fourth element is TRUE if it is desired to have the percentage overlap of the database annotation calculated, otherwise FALSE, and the fifth element is the name of the annotation  (e.g. "gene_promoters.bed, 4, 0.9, TRUE, Gene_promoters")
@@ -221,7 +231,7 @@ def calculate_overlap(output_prefix, workdir, avoutput, svtype, *bedfiles):
 				
 
 		avoutput = open(avoutput, 'r')
-		avoutput_overlap_calcs = open(workdir + output_prefix + "." + svtype + ".withoverlap.annovar.hg19_multianno.txt", 'w')
+		avoutput_overlap_calcs = open(workdir + "/" + output_prefix + "." + svtype + "." + size + ".withoverlap.annovar.hg19_multianno.txt", 'w')
 
 		#Iterate through annovar output file line by line and calculate reciprocal overlap where specified in overlap_col
 		for line in avoutput: 
@@ -291,7 +301,7 @@ def calculate_overlap(output_prefix, workdir, avoutput, svtype, *bedfiles):
 
 			avoutput_overlap_calcs.write("%s\n"%newline)
 
-		return workdir + output_prefix + "." + svtype + ".withoverlap.annovar.hg19_multianno.txt"
+		return workdir + "/" + output_prefix + "." + svtype + "." + size + ".withoverlap.annovar.hg19_multianno.txt"
 
 					
 def add_header(output_prefix, workdir, svtype, *bedfiles):

@@ -16,7 +16,7 @@ Some of this pipeline was created in collaboration with Phillip Richmond.
 
 ## Installation
 
-'''
+```
 git clone https://github.com/FriedmanLab/StructuralVariantAnalysis
 
-'''
+```

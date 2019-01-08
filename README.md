@@ -5,6 +5,9 @@ everythingSV comprises a pipeline for comprehensive structural variant (SV) anal
 Some of this pipeline was created in collaboration with Phillip Richmond.
 
 ## Software Requirements
+
+everythingSV requires the tools listed below already be installed:
+
 * [python 2.7](https://www.python.org/)
   * [pandas](http://pandas.pydata.org/)
 * [samtools](http://www.htslib.org/)
@@ -13,10 +16,20 @@ Some of this pipeline was created in collaboration with Phillip Richmond.
 * [Manta](https://github.com/Illumina/manta)
 * [ERDS](http://people.duke.edu/~mz34/erds.htm)
 * [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR)
+* [Annovar](http://annovar.openbioinformatics.org/en/latest/)
+
+The paths to the LUMPY, CNVnator, Manta, ERDS, SURVIVOR, and annovar executables will be used as arguments in everythingSV. 
+
+
 
 ## Installation
-
 ```
 git clone https://github.com/FriedmanLab/StructuralVariantAnalysis
-
 ```
+
+## everythingSV Pipeline
+
+The pipeline consists of two modules, the SV calling module and the SV annotation module. If the ```--sv_calling_only``` flag is used, SVs will be called annotation. If the ```--annotation_only``` flag is used, SVs are merged with SURVIVOR and annotated. If neither flag is specified, SVs are called, merged, and annotated. 
+
+
+

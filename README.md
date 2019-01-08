@@ -14,4 +14,9 @@ Some of this pipeline was created in collaboration with Phillip Richmond.
 * [ERDS](http://people.duke.edu/~mz34/erds.htm)
 * [SURVIVOR](https://github.com/fritzsedlazeck/SURVIVOR)
 
+## Installation
 
+'''
+git clone https://github.com/FriedmanLab/StructuralVariantAnalysis
+
+'''

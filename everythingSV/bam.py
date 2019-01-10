@@ -280,11 +280,8 @@ class bam_file():
 		command_line = "{} {} {} > {}".format (
 			cnvnator2VCF, workdir + "/" + output_prefix + ".CNVcall.1000", chromosomes, workdir + "/" + output_prefix + ".CNVcall.1000.vcf" )
 		subprocess.call(command_line, shell=True)
-		#filter out calls with q0 < 0.5 
-		command_line = "{} filter -e 'INFO/natorQ0 < 0.5' {} > {}".format(bcftools, workdir + "/" + output_prefix + ".CNVcall.1000.vcf", workdir + "/" + output_prefix + ".CNVcall.1000.filter.vcf")
-		subprocess.call(command_line, shell=True)
 
-		return workdir + "/" + output_prefix + ".CNVcall.1000.filter.vcf"
+		return workdir + "/" + output_prefix + ".CNVcall.1000.vcf"
 
 	def Manta_config(
 		self, manta_config, workdir, output_prefix):

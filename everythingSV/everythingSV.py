@@ -63,9 +63,6 @@ def parse_args():
 	parser.add_argument(
 		"--cnvnator2VCF", type=str, required=False,
 		help="Path to cnvnator2VCF.pl script. Required for SV calling pipeline.")
-	parser.add_argument(
-		"--bcftools", type=str, required=False,
-		help="Path to bcftools exectuable. Required for SV calling pipeline.")
 
 	#Manta-specific arguments
 	parser.add_argument(
@@ -310,9 +307,9 @@ def annotate_variants(
 	#ANNOTATE SMALL SVS
 	#Generate list of SV vcfs, then run SURVIVOR
 	if  SURVIVOR_additional_vcfs != None:
-		variant_list = sample_bam.make_variant_file(working_dir, output_prefix, LUMPY, Manta, SURVIVOR_additional_vcfs)
+		variant_list = sample_bam.make_variant_file(working_dir, output_prefix, LUMPY, Manta, CNVnator, SURVIVOR_additional_vcfs)
 	else:
-		variant_list = sample_bam.make_variant_file(working_dir, output_prefix, LUMPY, Manta)
+		variant_list = sample_bam.make_variant_file(working_dir, output_prefix, LUMPY, Manta, CNVnator)
 	
 	SURVIVOR = sample_bam.run_SURVIVOR(SURVIVOR_path, variant_list,
 	SURVIVOR_max_dist_small, SURVIVOR_min_support,

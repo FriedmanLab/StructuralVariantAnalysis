@@ -343,7 +343,10 @@ def add_header(output_prefix, workdir, svtype, *bedfiles):
 	 		colname = bed.strip('\n').split(',')[4]
 	 		colnames.append(colname)
 
-	 	end_colnames = ["SVtype", "Supporting_info", "Format", "LUMPY", "CNVnator", "Manta", "ERDS\n"]
+	 	if svtype == 'small':
+			end_colnames = ["SVtype", "Supporting_info", "Format", "LUMPY", "Manta","CNVnator\n"]
+		else:
+			end_colnames = ["SVtype", "Supporting_info", "Format", "CNVnator", "ERDS\n"]
 	 	
 	 	colnames = colnames + end_colnames
 

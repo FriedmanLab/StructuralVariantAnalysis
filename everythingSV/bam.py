@@ -224,7 +224,7 @@ class bam_file():
 		return  workdir + "/" + output_prefix + ".LUMPY.vcf"
 
 	def run_CNVnator(
-		self, CNVnator, cnvnator2VCF, bcftools, chromosomes, workdir, output_prefix):
+		self, CNVnator, cnvnator2VCF, chromosomes, workdir, output_prefix):
 		"""
 		Runs CNVnator on a bwa-mem aligned whole genome bam to detect CNVs.
 
@@ -236,9 +236,6 @@ class bam_file():
 
 		cnvnator2VCF : str
 			Path to cnvnator2VCF.pl script
-
-		bcftools : str
-			Path to bcftools executable
 
 		chromosomes : str
 			path to directory with chromosome.fa files

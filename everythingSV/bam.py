@@ -481,6 +481,7 @@ class bam_file():
 
 		"""
 		command_line = "{} merge {} {} {} {} {} {} {} {}".format(SURVIVOR_path, variant_list,
-max_dist, min_support, type, strand, estimate_distance, min_support, workdir + '/' + output_prefix + ".SURVIVOR.SV." + size + ".vcf")
+max_dist, min_support, type, strand, estimate_distance, min_SV, workdir + '/' + output_prefix + ".SURVIVOR.SV." + size + ".vcf")
 		subprocess.call(command_line, shell=True)
 		return workdir + '/' +  output_prefix + ".SURVIVOR.SV." + size + ".vcf"
+     

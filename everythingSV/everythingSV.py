@@ -156,7 +156,7 @@ def parse_args():
 	return args
 
 def run_SV_pipeline(
-	bam_file, reference, samtools_path, working_dir, output_prefix, lumpy_path, lumpy, read_length, min_mapq, min_support, CNVnator, cnvnator2VCF, bcftools, chromosomes, manta_config, ERDS_path, small_variant_vcf):
+	bam_file, reference, samtools_path, working_dir, output_prefix, lumpy_path, lumpy, read_length, min_mapq, min_support, CNVnator, cnvnator2VCF, chromosomes, manta_config, ERDS_path, small_variant_vcf):
 	"""
 	Runs SV callers: LUMPY, CNVnator, Manta, ERDS.
 
@@ -187,8 +187,6 @@ def run_SV_pipeline(
 		Path to CNVnator exectuable
 	cnvnator2VCF: str
 		Path to cnvnator2VCF.pl script
-	bcftools: str
-		Path to bcftools exectuable
 	chromosomes: str 
 		Path to chromosome fastas
 	manta_config: str
@@ -222,7 +220,7 @@ def run_SV_pipeline(
 		sample_bam.get_insert_size(lumpy_path, working_dir, output_prefix), read_length, min_mapq, min_support)
 
 	#Run CNVnator
-	CNVnator = sample_bam.run_CNVnator(CNVnator, cnvnator2VCF, bcftools, chromosomes, working_dir, output_prefix)
+	CNVnator = sample_bam.run_CNVnator(CNVnator, cnvnator2VCF, chromosomes, working_dir, output_prefix)
 
 	#Generate Manta config file, then run Manta
 	Manta_Dir = sample_bam.Manta_config(manta_config, working_dir, output_prefix)
@@ -427,7 +425,7 @@ def main():
 		if args.annotation_only == False:
 			print "Running SV and Annotation Pipelines..."
 			#Run SV calling and annotation pipelines
-			if all(v is not None for v in [args.bam_file, args.reference, args.samtools_path, args.working_dir, args.output_prefix, args.lumpy_path, args.lumpy, args.read_length, args.min_mapq, args.min_support, args.CNVnator,args.cnvnator2VCF, args.bcftools, args.chromosomes, args.manta_config, args.ERDS_path, args.small_variant_vcf]):
+			if all(v is not None for v in [args.bam_file, args.reference, args.samtools_path, args.working_dir, args.output_prefix, args.lumpy_path, args.lumpy, args.read_length, args.min_mapq, args.min_support, args.CNVnator,args.cnvnator2VCF, args.chromosomes, args.manta_config, args.ERDS_path, args.small_variant_vcf]):
 				#create working directory where results will be written
 				command_line = "mkdir {}".format(args.working_dir)
 				subprocess.call(command_line, shell=True)
@@ -445,7 +443,6 @@ def main():
 					min_support = args.min_support,
 					CNVnator = args.CNVnator,
 					cnvnator2VCF = args.cnvnator2VCF,
-					bcftools = args.bcftools,
 					chromosomes = args.chromosomes,
 					manta_config = args.manta_config,
 					ERDS_path = args.ERDS_path,
@@ -522,7 +519,7 @@ def main():
 	else:
 		#Run SV pipeline only
 		print "Running SV Pipeline..."
-		if all(v is not None for v in [args.bam_file, args.reference, args.samtools_path, args.working_dir, args.output_prefix, args.lumpy_path, args.lumpy, args.read_length, args.min_mapq, args.min_support, args.CNVnator, args.cnvnator2VCF, args.bcftools, args.chromosomes, args.manta_config, args.ERDS_path, args.small_variant_vcf]):
+		if all(v is not None for v in [args.bam_file, args.reference, args.samtools_path, args.working_dir, args.output_prefix, args.lumpy_path, args.lumpy, args.read_length, args.min_mapq, args.min_support, args.CNVnator, args.cnvnator2VCF, args.chromosomes, args.manta_config, args.ERDS_path, args.small_variant_vcf]):
 				#create working directory where results will be written
 				command_line = "mkdir {}".format(args.working_dir)
 				subprocess.call(command_line, shell=True)
@@ -539,7 +536,6 @@ def main():
 					min_support = args.min_support,
 					CNVnator = args.CNVnator,
 					cnvnator2VCF = args.cnvnator2VCF,
-					bcftools = args.bcftools,
 					chromosomes = args.chromosomes,
 					manta_config = args.manta_config,
 					ERDS_path = args.ERDS_path,

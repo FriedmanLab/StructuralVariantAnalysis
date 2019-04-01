@@ -307,7 +307,7 @@ def annotate_variants(
 	if  SURVIVOR_additional_vcfs != None:
 		variant_list = sample_bam.make_variant_file(working_dir, output_prefix, LUMPY, Manta, CNVnator, SURVIVOR_additional_vcfs)
 	else:
-		variant_list = sample_bam.make_variant_file(working_dir, output_prefix, LUMPY, Manta, CNVnator)
+		variant_list = sample_bam.make_variant_file(working_dir, output_prefix, LUMPY, Manta, CNVnator, ERDS)
 	
 	SURVIVOR = sample_bam.run_SURVIVOR(SURVIVOR_path, variant_list,
 	SURVIVOR_max_dist_small, SURVIVOR_min_support,

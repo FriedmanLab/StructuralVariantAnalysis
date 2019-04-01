@@ -272,13 +272,18 @@ def calculate_overlap(output_prefix, workdir, avoutput, svtype, size, *bedfiles)
 					#create new list associating database annotation coordinates to reciprocal overlap calculation
 					new_col =[]
 					for anno, rec in zip (annotation, recoverlaplist):
-						new_col.append(anno + ":" + rec)
+						#If the reciprocal overlap of the sample SV with the database SV is greater than 0.8, add the allele count to this column.
+						AC = anno.split(':')[3]
+						if float(rec) >= 0.8:
+							new_col.append(str(AC))
+						else:
+							pass
 					new_col = ",".join(new_col)
 					output_col.append(new_col)
 			index = 0
 			newcol_index = 0
 			final_output_col = []
-			#For final output, append columns unchanged where the reciprocal overlap was not calculated. For columns for which a reciprocal overlap was calculated, append modified annotations which include reciprocal overlap fraction
+			#For columns for which an overlap calculation was specified, replace the original column with allele counts of annotations overlapped by sample SV by at least 80%
 			chr=cols[0]
 			start=int(cols[1])
 			end=int(cols[2])

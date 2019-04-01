@@ -11,7 +11,7 @@ def parse_args():
     Parser argument namespace
     """
     parser = argparse.ArgumentParser(
-            description="This script filters a set of annotated SVs output from everythingSV.py")
+            description="This script filters a set of annotated SVs output from everythingSV.py based on overlap with inhouse databases")
     parser.add_argument(
             "--annovar_output_with_overlap", type=str, required=True,
             help="Path to annovar output with overlap e.g.<SAMPLE>.DEL.withoverlap.header.annovar.hg19_multianno.txt")
@@ -26,7 +26,7 @@ def parse_args():
             help="SV type")
     parser.add_argument(
             "--max_AC",type=int,  required=True,
-            help="Variants with an allele count greater than max_AC will be filtered out if the reciprocal overlap with the sample SV is greater than or equal to 0.8")
+            help="Variants that have a maximum allele count greater than max_AC, or overlap with more than max_AC number of different variants, are filtered out. e.g. say your max_AC is 5 (1) if AC are 6,5,4,3,2,1 then this would be filtered because AC1 = 6, (2) 5,4,3,2,1,1 would also be filtered because there are 6 'different' AC ")
     args = parser.parse_args()
     return args
 
@@ -36,79 +36,43 @@ def main():
 	filtered_SVs = open(args.workdir + "/" + args.output_prefix + "." + args.svtype +  ".filtered.withoverlap.header.annovar.hg19_multianno.txt", 'w')
 	for line in SVs:
 		cols = line.strip('\n').split('\t')
-		CAUSESinhouse = cols[10]
-		IMAGINEinhouse = cols[11]
+		CAUSESinhouse = cols[10].split(',')
+		IMAGINEinhouse = cols[11].split(',')
 		if cols[0] == "Chr":
 			filtered_SVs.write("%s"%line)
-		elif CAUSESinhouse == "":
-			if IMAGINEinhouse == "":
+		elif CAUSESinhouse[0] == "":
+			if IMAGINEinhouse[0] == "":
 				#no overlap with either database
 				filtered_SVs.write("%s"%line)
 			else:
 				#overlap only with IMAGINE database
-				IMAGINEinhouse =IMAGINEinhouse.split(',')
-				AClist = []
-				for record in IMAGINEinhouse: 
-					record = record.split(':')
-					AC = int(record[3])
-					overlap = float(record[4])
-					if overlap >= 0.8:
-						AClist.append(AC)
-					else:
-						pass
-				#IMAGINE count > max_AC
-				if len(AClist) == 0:
-					filtered_SVs.write("%s"%line)
-				elif max(AClist) > args.max_AC:
+				if max(IMAGINEinhouse) > args.max_AC:
+					pass
+				elif len(IMAGINEinhouse) > args.max_AC:
 					pass
 				else:
 					filtered_SVs.write("%s"%line)
-		elif IMAGINEinhouse == "": 
+		elif IMAGINEinhouse[0] == "": 
 			#overlap only with CAUSES database
-			CAUSESinhouse =CAUSESinhouse.split(',')
-			AClist = []
-			for record in CAUSESinhouse: 
-				record = record.split(':')
-				AC = int(record[3])
-				overlap = float(record[4])
-				if overlap >= 0.8:
-					AClist.append(AC)
-				else:
-					pass
-			if len(AClist) == 0:
-				filtered_SVs.write("%s"%line)
-			elif max(AClist) > args.max_AC:
+			if int(max(CAUSESinhouse)) > int(args.max_AC):
+				pass
+			elif len(CAUSESinhouse) > int(args.max_AC):
 				pass
 			else:
 				filtered_SVs.write("%s"%line)
 		else: 
 			#overlap with both databases
-			CAUSESinhouse =CAUSESinhouse.split(',')
-			AClist = []
-			for record in CAUSESinhouse: 
-				record = record.split(':')
-				AC = int(record[3])
-				overlap = float(record[4])
-				if overlap >= 0.8:
-					AClist.append(AC)
-				else:
-					pass
-			IMAGINEinhouse =IMAGINEinhouse.split(',')
-			AClist = []
-			for record in IMAGINEinhouse: 
-				record = record.split(':')
-				AC = int(record[3])
-				overlap = float(record[4])
-				if overlap >= 0.8:
-					AClist.append(AC)
-				else:
-					pass
-			if len(AClist) == 0:
-					filtered_SVs.write("%s"%line)
-			elif max(AClist) > args.max_AC:
+			if int(max(CAUSESinhouse)) > int(args.max_AC):
+				pass
+			elif len(CAUSESinhouse) > int(args.max_AC):
 				pass
 			else:
-				filtered_SVs.write("%s"%line)
+				if int(max(IMAGINEinhouse)) > int(args.max_AC):
+					pass
+				elif len(IMAGINEinhouse) > int(args.max_AC):
+					pass
+				else:
+					filtered_SVs.write("%s"%line)
 
 
 main()

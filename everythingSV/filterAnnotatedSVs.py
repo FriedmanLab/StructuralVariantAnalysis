@@ -46,6 +46,7 @@ def main():
 				filtered_SVs.write("%s"%line)
 			else:
 				#overlap only with IMAGINE database
+				IMAGINEinhouse = map(int, IMAGINEinhouse)
 				if max(IMAGINEinhouse) > args.max_AC:
 					pass
 				elif len(IMAGINEinhouse) > args.max_AC:
@@ -54,20 +55,24 @@ def main():
 					filtered_SVs.write("%s"%line)
 		elif IMAGINEinhouse[0] == "": 
 			#overlap only with CAUSES database
-			if int(max(CAUSESinhouse)) > int(args.max_AC):
+			CAUSESinhouse = map(int, CAUSESinhouse)
+			if max(CAUSESinhouse) > int(args.max_AC):
 				pass
 			elif len(CAUSESinhouse) > int(args.max_AC):
 				pass
 			else:
 				filtered_SVs.write("%s"%line)
 		else: 
+			CAUSESinhouse = map(int, CAUSESinhouse)
+			IMAGINEinhouse = map(int, IMAGINEinhouse)
 			#overlap with both databases
-			if int(max(CAUSESinhouse)) > int(args.max_AC):
+			if max(CAUSESinhouse) > int(args.max_AC):
 				pass
 			elif len(CAUSESinhouse) > int(args.max_AC):
 				pass
 			else:
-				if int(max(IMAGINEinhouse)) > int(args.max_AC):
+				if max(IMAGINEinhouse) > int(args.max_AC):
+
 					pass
 				elif len(IMAGINEinhouse) > int(args.max_AC):
 					pass

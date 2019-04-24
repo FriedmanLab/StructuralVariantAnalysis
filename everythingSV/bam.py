@@ -418,6 +418,8 @@ class bam_file():
 			if isinstance(arg, list):
 				for a in arg:
 					vcfs = vcfs + a + '\n'
+			elif arg is None:
+				pass
 			else:
 				vcfs = vcfs + arg + '\n'
 
@@ -482,6 +484,6 @@ class bam_file():
 		"""
 		command_line = "{} merge {} {} {} {} {} {} {} {}".format(SURVIVOR_path, variant_list,
 max_dist, min_support, type, strand, estimate_distance, min_SV, workdir + '/' + output_prefix + ".SURVIVOR.SV." + size + ".vcf")
+		print command_line
 		subprocess.call(command_line, shell=True)
 		return workdir + '/' +  output_prefix + ".SURVIVOR.SV." + size + ".vcf"
-     

@@ -482,7 +482,7 @@ def main():
 		else:
 			#Run annotation pipeline only
 			print "Running Annotation Pipeline..."
-			if all(v is not None for v in [args.bam_file, args.reference, args.samtools_path, args.working_dir, args.output_prefix, args.LUMPY_vcf, args.CNVnator_vcf, args.Manta_vcf, args.ERDS_vcf, args.SURVIVOR_path, args.SURVIVOR_max_dist_small, args.SURVIVOR_max_dist_large, args.SURVIVOR_min_support, args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV_small, args.SURVIVOR_min_SV_large, args.table_annovar, args.humandb, args.annovar_reference, args.deletion_bedfiles, args.duplication_bedfiles, args.inversion_bedfiles,args.insertion_bedfiles, args.breakend_bedfiles]):
+			if all(v is not None for v in [args.bam_file, args.reference, args.samtools_path, args.working_dir, args.output_prefix, args.SURVIVOR_path, args.SURVIVOR_max_dist_small, args.SURVIVOR_max_dist_large, args.SURVIVOR_min_support, args.SURVIVOR_type, args.SURVIVOR_strand, args.SURVIVOR_estimate_distance, args.SURVIVOR_min_SV_small, args.SURVIVOR_min_SV_large, args.table_annovar, args.humandb, args.annovar_reference, args.deletion_bedfiles, args.duplication_bedfiles, args.inversion_bedfiles,args.insertion_bedfiles, args.breakend_bedfiles]):
 					annotate_variants(
 						working_dir = args.working_dir,
 						output_prefix = args.output_prefix,
